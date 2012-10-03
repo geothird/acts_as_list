@@ -93,22 +93,28 @@ module ActiveRecord
         def move_item(position)
           # When moving by one increment higher/lower
           if position.to_i == send(position_column).to_i + 1
+            logger.debug "debug: #{send(position_column)}"
             move_higher if position.to_i != bottom_position_in_list.to_i
           elsif position == send(position_column).to_i - 1
+            logger.debug "debug: #{send(position_column)}"
             move_lower if position.to_i != 0
           else
             if position.to_i > send(position_column).to_i
               # move is higher
-              self.update_attributes!(position_column => position)
+              logger.debug "debug: #{send(position_column)}"
+              self.update_column!(:position_column, position)
               increment_positions_on_higher_items(position)
             elsif position.to_i < send(position_column).to_i
               # move is lower
-              self.update_attributes!(position_column => position)
+              logger.debug "debug: #{send(position_column)}"
+              self.update_column!(:position_column, position)
               increment_positions_on_lower_items(position)
             else # its new so insert
-              insert_at position
+              logger.debug "debug: #{send(position_column)}"
+              insert_at_position(position)
             end
           end
+          logger.debug "debug: #{send(position_column)}"
         end
 
         # Insert the item at the given position (defaults to the top position of 1).
@@ -160,20 +166,20 @@ module ActiveRecord
         def remove_from_list
           if in_list?
             decrement_positions_on_lower_items
-            update_attributes! position_column => nil
+            update_column!(:position_column, nil)
           end
         end
 
         # Increase the position of this item without adjusting the rest of the list.
         def increment_position
           return unless in_list?
-          update_attributes! position_column => self.send(position_column).to_i + 1
+          update_column!(:position_column, self.send(position_column).to_i + 1)
         end
 
         # Decrease the position of this item without adjusting the rest of the list.
         def decrement_position
           return unless in_list?
-          update_attributes! position_column => self.send(position_column).to_i - 1
+          update_column!(:position_column, self.send(position_column).to_i - 1)
         end
 
         # Return +true+ if this object is the first in the list.
@@ -254,12 +260,12 @@ module ActiveRecord
 
           # Forces item to assume the bottom position in the list.
           def assume_bottom_position
-            update_attributes!(position_column => bottom_position_in_list(self).to_i + 1)
+            update_column!(:position_column, bottom_position_in_list(self).to_i + 1)
           end
 
           # Forces item to assume the top position in the list.
           def assume_top_position
-            update_attributes!(position_column => acts_as_list_top)
+            update_column!(:position_column, acts_as_list_top)
           end
 
           # This has the effect of moving all the higher items up one.
@@ -338,7 +344,7 @@ module ActiveRecord
           def store_at_0
             if in_list?
               old_position = send(position_column).to_i
-              update_attributes!(position_column => 0)
+              update_column!(:position_column, 0)
               decrement_positions_on_lower_items(old_position)
             end
           end
