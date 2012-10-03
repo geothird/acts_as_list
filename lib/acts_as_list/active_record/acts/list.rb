@@ -88,29 +88,33 @@ module ActiveRecord
       # lower in the list of all chapters. Likewise, <tt>chapter.first?</tt> would return +true+ if that chapter is
       # the first in the list of all chapters.
       module InstanceMethods
-
+        def show_test_log(pos)
+          logger.debug "debug: existing: #{send(position_column)} new: #{pos}"
+        end
         # move_item Move the item to its new location.
         def move_item(position)
           # When moving by one increment higher/lower
           if position.to_i == send(position_column).to_i + 1
-            logger.debug "debug: #{send(position_column)}"
+            show_test_log position
             move_higher if position.to_i != acts_as_list_top.to_i
+            show_test_log position
           elsif position == send(position_column).to_i - 1
-            logger.debug "debug: #{send(position_column)}"
+            show_test_log position
             move_lower if position.to_i != 0
+            show_test_log position
           else
             if position.to_i > send(position_column).to_i
               # move is higher
-              logger.debug "debug: #{send(position_column)}"
+              show_test_log position
               self.update_column!(:position_column, position)
               increment_positions_on_higher_items(position)
             elsif position.to_i < send(position_column).to_i
               # move is lower
-              logger.debug "debug: #{send(position_column)}"
+              show_test_log position
               self.update_column!(:position_column, position)
               increment_positions_on_lower_items(position)
             else # its new so insert
-              logger.debug "debug: #{send(position_column)}"
+              show_test_log position
               insert_at_position(position)
             end
           end
@@ -337,7 +341,7 @@ module ActiveRecord
             else
               increment_positions_on_lower_items(position)
             end
-            self.update_attributes!(position_column => position)
+            self.update_column!(:position_column, position)
           end
 
           # used by insert_at_position instead of remove_from_list, as postgresql raises error if position_column has non-null constraint
