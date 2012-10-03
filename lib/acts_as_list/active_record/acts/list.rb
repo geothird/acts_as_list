@@ -88,6 +88,29 @@ module ActiveRecord
       # lower in the list of all chapters. Likewise, <tt>chapter.first?</tt> would return +true+ if that chapter is
       # the first in the list of all chapters.
       module InstanceMethods
+
+        # move_item Move the item to its new location.
+        def move_item(position)
+          # When moving by one increment higher/lower
+          if position.to_i == send(position_column).to_i + 1
+            move_higher if position.to_i != bottom_position_in_list.to_i
+          elsif position == send(position_column).to_i - 1
+            move_lower if position.to_i != 0
+          else
+            if position.to_i > send(position_column).to_i
+              # move is higher
+              self.update_attributes!(position_column => position)
+              increment_positions_on_higher_items(position)
+            elsif position.to_i < send(position_column).to_i
+              # move is lower
+              self.update_attributes!(position_column => position)
+              increment_positions_on_lower_items(position)
+            else # its new so insert
+              insert_at position
+            end
+          end
+        end
+
         # Insert the item at the given position (defaults to the top position of 1).
         def insert_at(position = acts_as_list_top)
           insert_at_position(position)
