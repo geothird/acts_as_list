@@ -94,7 +94,7 @@ module ActiveRecord
           # When moving by one increment higher/lower
           if position.to_i == send(position_column).to_i + 1
             logger.debug "debug: #{send(position_column)}"
-            move_higher if position.to_i != bottom_position_in_list.to_i
+            move_higher if position.to_i != acts_as_list_top.to_i
           elsif position == send(position_column).to_i - 1
             logger.debug "debug: #{send(position_column)}"
             move_lower if position.to_i != 0
